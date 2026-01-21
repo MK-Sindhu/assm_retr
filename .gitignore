@@ -1,1 +1,3 @@
 assembly_filter_out/ 
+
+*.parquet
