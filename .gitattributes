@@ -1,0 +1,1 @@
+project/assembly_filter_out/** filter=lfs diff=lfs merge=lfs -text
