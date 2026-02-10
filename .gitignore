@@ -1,2 +1,4 @@
-
+Automate/
+chats/
 *.parquet
+*.pyc
