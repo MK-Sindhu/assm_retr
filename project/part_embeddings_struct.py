@@ -40,11 +40,22 @@ def compute_struct_embedding(data) -> torch.Tensor:
             density = float(m) / float(n * (n - 1))
 
     # Node feature stats
-    if hasattr(data, "x") and isinstance(data.x, torch.Tensor):
+    # Node feature stats (robust)
+    if hasattr(data, "x") and isinstance(data.x, torch.Tensor) and data.x.numel() > 0:
         x = data.x.float()
+        finite = torch.isfinite(x)
+        if finite.any():
+            xf = x[finite]
+            x_mean = float(xf.mean())
+            x_std = float(xf.std(unbiased=False))
+            if not (x_mean == x_mean):  # NaN check
+                x_mean = 0.0
+            if not (x_std == x_std):
+                x_std = 0.0
+        else:
+            x_mean = 0.0
+            x_std = 0.0
         x_dim = float(x.shape[1]) if x.ndim == 2 else 0.0
-        x_mean = float(x.mean())
-        x_std = float(x.std(unbiased=False))
     else:
         x_dim = 0.0
         x_mean = 0.0
@@ -86,7 +97,7 @@ def main():
         pid = fp.stem
 
         try:
-            # 🔥 critical fix here:
+            #  critical fix here:
             obj = torch.load(fp, map_location="cpu", weights_only=False)
 
             # If saved as dict with "data"
@@ -105,7 +116,7 @@ def main():
             print(f"Processed: {i} | embeddings: {len(part_embeddings)} | bad: {bad}")
 
     torch.save(part_embeddings, args.out)
-    print("\n✅ Saved:", args.out)
+    print("\n Saved:", args.out)
     print("Embeddings:", len(part_embeddings))
     print("Bad files:", bad)
 
